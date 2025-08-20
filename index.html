@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitoramento em Tempo Real</title>
+<style>
+body {
+font-family: sans-serif;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+background-color: #f0f0f0;
+margin: 0;
+flex-direction: column;
+}
+.container {
+background: #fff;
+padding: 30px;
+
+border-radius: 8px;
+box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+text-align: center;
+}
+h1 {
+color: #333;
+}
+#status {
+font-weight: bold;
+color: gray;
+margin-bottom: 20px;
+}
+#temperature-display {
+font-size: 4em;
+color: #ff6347; /* Tomate */
+font-weight: bold;
+}
+#last-update {
+margin-top: 10px;
+color: #666;
+font-size: 0.9em;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>Monitoramento de Temperatura</h1>
+
+<p id="status">Status: Desconectado</p>
+<div id="temperature-display">--°C</div>
+<div id="last-update">Última atualização: --:--:--</div>
+</div>
+
+<script>
+const statusEl = document.getElementById('status');
+const tempDisplayEl = document.getElementById('temperature-display');
+const lastUpdateEl = document.getElementById('last-update');
+
+// Cria uma nova conexão WebSocket com o servidor
+const ws = new WebSocket('ws://localhost:8080');
+
+// Evento disparado quando a conexão é estabelecida
+ws.onopen = () => {
+statusEl.textContent = 'Status: Conectado';
+statusEl.style.color = 'green';
+console.log('Conexão WebSocket estabelecida.');
+};
+
+// Evento disparado quando uma mensagem é recebida do servidor
+ws.onmessage = event => {
+// A mensagem vem como uma string, então precisamos parsear para JSON
+const data = JSON.parse(event.data);
+
+// Atualiza os elementos HTML com os dados recebidos
+tempDisplayEl.textContent = `${data.temperature}°C`;
+lastUpdateEl.textContent = `Última atualização: ${data.timestamp}`;
+
+console.log('Dados recebidos:', data);
+};
+
+// Evento disparado quando a conexão é fechada
+ws.onclose = () => {
+statusEl.textContent = 'Status: Desconectado';
+statusEl.style.color = 'red';
+console.log('Conexão WebSocket fechada.');
+};
+
+// Evento para tratar possíveis erros
+ws.onerror = error => {
+console.error('Erro no WebSocket:', error);
+};
+</script>
+
+</body>
+</html>
